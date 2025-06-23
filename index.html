@@ -1,1 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#1a1a1a" />
+  <title>Workout Log</title>
+  <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --bg-tertiary: #e9ecef;
+        --text-primary: #212529;
+        --text-secondary: #6c757d;
+        --accent: #007aff;
+        --accent-hover: #0056b3;
+        --success: #28a745;
+        --danger: #dc3545;
+        --border: #dee2e6;
+        --shadow: rgba(0, 0, 0, 0.1);
+        --modal-backdrop: rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="dark"] {
+        --bg-primary: #121212;
+        --bg-secondary: #1e1e1e;
+        --bg-tertiary: #2a2a2a;
+        --text-primary: #e0e0e0;
+        --text-secondary: #a0a0a0;
+        --border: #3a3a3a;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --modal-backdrop: rgba(0, 0, 0, 0.7);
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        min-height: 100vh;
+        transition: background-color 0.3s ease;
+        padding-bottom: 80px;
+    }
+
+    .header {
+        background: var(--bg-secondary);
+        padding: 1rem;
+        box-shadow: 0 2px 4px var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .header h1 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .icon-btn {
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+        background: var(--bg-tertiary);
+    }
+
+    .stats-bar {
+        background: var(--bg-secondary);
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .stats-content {
+        max-width: 600px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+    }
+
+    .stat-item {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--accent);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+
+    .month-section {
+        margin-bottom: 2rem;
+    }
+
+    .month-header {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        padding: 0 0.5rem;
+    }
+
+    .workout-card {
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px var(--shadow);
+        transition: all 0.2s ease;
+    }
+
+    .workout-card.expanded {
+        box-shadow: 0 4px 6px var(--shadow);
+    }
+
+    .workout-header {
+        padding: 1rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.2s ease;
+    }
+
+    .workout-header:hover {
+        background: var(--bg-tertiary);
+    }
+
+    .workout-info {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .workout-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        background: var(--bg-primary);
+        border-radius: 8px;
+        min-width: 50px;
+    }
+
+    .date-day {
+        font-size: 1.25rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    .date-weekday {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .workout-type {
+        flex: 1;
+    }
+
+    .type-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .type-exercises {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .workout-toggle {
+        font-size: 1rem;
+        transition: transform 0.2s ease;
+        color: var(--text-secondary);
+    }
+
+    .workout-card.expanded .workout-toggle {
+        transform: rotate(180deg);
+    }
+
+    .workout-content {
+        display: none;
+        padding: 0 1rem 1rem;
+        background: var(--bg-primary);
+    }
+
+    .workout-card.expanded .workout-content {
+        display: block;
+    }
+
+    .exercise-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .exercise-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .exercise-name {
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .exercise-check {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .exercise-inputs {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .input-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .input-label {
+        font-size: 0.625rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.125rem;
+    }
+
+    .input-field {
+        background: var(--bg-primary);
+        border: 1px solid var(--border);
+        padding: 0.375rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        width: 100%;
+    }
+
+    .input-field:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .add-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px var(--shadow);
+        transition: all 0.2s ease;
+        z-index: 90;
+    }
+
+    .add-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px var(--shadow);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--modal-backdrop);
+        z-index: 200;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: var(--bg-primary);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 400px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--text-primary);
+        cursor: pointer;
+    }
+
+    .form-select:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .form-date {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    .create-btn {
+        width: 100%;
+        padding: 0.875rem;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .create-btn:hover {
+        background: var(--accent-hover);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-secondary);
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-text {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-hint {
+        font-size: 0.875rem;
+    }
+
+    .notes-section {
+        margin-top: 1rem;
+    }
+
+    .notes-textarea {
+        width: 100%;
+        min-height: 60px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        padding: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .quick-btn {
+        padding: 0.5rem 1rem;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        font-size: 0.75rem;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .quick-btn:hover {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    @media (max-width: 480px) {
+        .exercise-inputs {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+  </style>
+  
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1>💪 Workout Log</h1>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+        <button class="icon-btn" onclick="showStats()">📊</button>
+        <button class="icon-btn" onclick="clearAllData()">🗑️</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stats-content">
+      <div class="stat-item">
+        <div class="stat-value" id="weekCount">0</div>
+        <div class="stat-label">This Week</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="monthCount">0</div>
+        <div class="stat-label">This Month</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="totalCount">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="container">
+    <div class="empty-state">
+      <div class="empty-icon">🏋️</div>
+      <div class="empty-text">No workouts yet</div>
+      <div class="empty-hint">Tap + to add your first workout</div>
+    </div>
+  </div>
+
+  <button class="add-button" onclick="showAddModal()">+</button>
+
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">New Workout</h2>
+        <button class="modal-close" onclick="hideModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-select" id="modalDateInput" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Workout Type</label>
+          <select class="form-select" id="workoutType" onchange="updateQuickActions()">
+            <option value="">Select workout type...</option>
+            <option value="push">Push Day</option>
+            <option value="pull">Pull Day</option>
+            <option value="legs">Legs Day</option>
+            <option value="push-cali">Push + Calisthenics</option>
+            <option value="pull-cali">Pull + Calisthenics</option>
+            <option value="legs-core">Legs + Core</option>
+            <option value="upper">Upper Body</option>
+            <option value="full">Full Body</option>
+            <option value="cali">Calisthenics Only</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+
+        <div class="quick-actions" id="quickActions" style="display: none;">
+          <div style="width: 100%; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+            Quick templates:
+          </div>
+        </div>
+
+        <button class="create-btn" onclick="createWorkout()">Create Workout</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const exerciseTemplates = {
+      push: { name: 'Push Day', exercises: ['Bench Press', 'Incline DB Press', 'Shoulder Press', 'Lateral Raises', 'Dips', 'Tricep Extensions'] },
+      pull: { name: 'Pull Day', exercises: ['Pull-ups', 'Barbell Rows', 'Face Pulls', 'Bicep Curls', 'Shrugs', 'Hammer Curls'] },
+      legs: { name: 'Legs Day', exercises: ['Squats', 'Romanian Deadlifts', 'Leg Press', 'Leg Curls', 'Calf Raises', 'Leg Extensions'] },
+      'push-cali': { name: 'Push + Calisthenics', exercises: ['Dips', 'Pike Push-ups', 'Diamond Push-ups', 'Handstand Hold', 'DB Shoulder Press', 'Planche Leans'] },
+      'pull-cali': { name: 'Pull + Calisthenics', exercises: ['Muscle-ups', 'Weighted Pull-ups', 'L-Sit Pull-ups', 'Front Lever', 'Rows', 'Bicep Curls'] },
+      'legs-core': { name: 'Legs + Core', exercises: ['Front Squats', 'Bulgarian Split Squats', 'Hanging Leg Raises', 'Ab Wheel', 'Planks', 'Cable Crunches'] },
+      upper: { name: 'Upper Body', exercises: ['Bench Press', 'Pull-ups', 'Overhead Press', 'Barbell Rows', 'Dips', 'Curls'] },
+      full: { name: 'Full Body', exercises: ['Deadlifts', 'Squats', 'Bench Press', 'Pull-ups', 'Overhead Press', 'Rows'] },
+      cali: { name: 'Calisthenics Only', exercises: ['Muscle-ups', 'Handstand Push-ups', 'Pistol Squats', 'L-Sits', 'Front Lever', 'Human Flag'] },
+      custom: { name: 'Custom Workout', exercises: [] }
+    };
+
+    const quickTemplates = {
+      push: ['Heavy', 'Volume', 'Strength'],
+      pull: ['Heavy', 'Volume', 'Back Focus'],
+      legs: ['Quad Focus', 'Hamstring Focus', 'Heavy']
+    };
+
+    let workouts = [];
+
+    function init() {
+      loadData();
+      setupTheme();
+      updateStats();
+      renderWorkouts();
+    }
+
+    function setupTheme() {
+      const savedTheme = localStorage.getItem('workoutTheme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('workoutTheme', newTheme);
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem('workouts');
+      if (saved) workouts = JSON.parse(saved);
+    }
+
+    function saveData() {
+      localStorage.setItem('workouts', JSON.stringify(workouts));
+      updateStats();
+    }
+
+    function clearAllData() {
+      if (confirm('Clear all workout data? This cannot be undone.')) {
+        workouts = [];
+        localStorage.removeItem('workouts');
+        renderWorkouts();
+        updateStats();
+      }
+    }
+
+    function updateStats() {
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      let weekCount = 0, monthCount = 0;
+
+      workouts.forEach(w => {
+        const workoutDate = new Date(w.date);
+        if (workoutDate >= weekStart) weekCount++;
+        if (workoutDate >= monthStart) monthCount++;
+      });
+
+      document.getElementById('weekCount').textContent = weekCount;
+      document.getElementById('monthCount').textContent = monthCount;
+      document.getElementById('totalCount').textContent = workouts.length;
+    }
+
+    function showStats() {
+      alert(`Workout Stats:\n\nTotal: ${workouts.length} workouts\nThis week: ${document.getElementById('weekCount').textContent}\nThis month: ${document.getElementById('monthCount').textContent}`);
+    }
+
+    function showAddModal() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('modalDateInput').value = today;
+      document.getElementById('workoutType').value = '';
+      document.getElementById('quickActions').style.display = 'none';
+      document.getElementById('addModal').classList.add('active');
+    }
+
+    function hideModal() {
+      document.getElementById('addModal').classList.remove('active');
+    }
+
+    function updateQuickActions() {
+      const type = document.getElementById('workoutType').value;
+      const quickActions = document.getElementById('quickActions');
+
+      if (quickTemplates[type]) {
+        quickActions.style.display = 'block';
+        const buttons = quickTemplates[type].map(template =>
+          `<button class="quick-btn" onclick="selectTemplate('${type}', '${template}')">${template}</button>`
+        ).join('');
+        quickActions.innerHTML = '<div style="width: 100%; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Quick templates:</div>' + buttons;
+      } else {
+        quickActions.style.display = 'none';
+      }
+    }
+
+    function selectTemplate(type, template) {
+      document.getElementById('workoutType').value = type;
+    }
+
+    function createWorkout() {
+      const type = document.getElementById('workoutType').value;
+      const dateInput = document.getElementById('modalDateInput').value;
+
+      if (!type || !dateInput) {
+        alert('Please select a workout type and date');
+        return;
+      }
+
+      const template = exerciseTemplates[type];
+      const workout = {
+        id: Date.now(),
+        date: new Date(dateInput).toISOString(),
+        type: type,
+        name: template.name,
+        exercises: template.exercises.map(name => ({
+          name: name,
+          weight: '',
+          sets: '',
+          reps: '',
+          rpe: '',
+          done: false
+        })),
+        notes: '',
+        completed: false
+      };
+
+      workouts.push(workout);
+      workouts.sort((a, b) => new Date(b.date) - new Date(a.date)); // newest to oldest
+      saveData();
+      renderWorkouts();
+      hideModal();
+
+
+  // Auto-expand new workout
+        setTimeout(() => {
+            const card = document.getElementById('workout-' + workout.id);
+            if (card) card.classList.add('expanded');
+        }, 100);
+    }
+
+    // Render
+    function renderWorkouts() {
+        const container = document.getElementById('container');
+        
+        if (workouts.length === 0) {
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏋️</div><div class="empty-text">No workouts yet</div><div class="empty-hint">Tap + to add your first workout</div></div>';
+            return;
+        }
+        
+        // Group by month
+        const grouped = {};
+        workouts.forEach(workout => {
+            const date = new Date(workout.date);
+            const monthKey = date.getFullYear() + '-' + date.getMonth();
+            const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            if (!grouped[monthKey]) {
+                grouped[monthKey] = {
+                    name: monthName,
+                    workouts: []
+                };
+            }
+            grouped[monthKey].workouts.push(workout);
+        });
+        
+        let html = '';
+        for (const [key, group] of Object.entries(grouped)) {
+            html += '<div class="month-section"><div class="month-header">' + group.name + '</div>';
+            group.workouts.forEach(workout => {
+                html += createWorkoutCard(workout);
+            });
+            html += '</div>';
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function createWorkoutCard(workout) {
+        const date = new Date(workout.date);
+        const isToday = isDateToday(date);
+        const doneCount = workout.exercises.filter(e => e.done).length;
+        
+        let html = '<div class="workout-card" id="workout-' + workout.id + '">';
+        html += '<div class="workout-header" onclick="toggleWorkout(' + workout.id + ')">';
+        html += '<div class="workout-info">';
+        html += '<div class="workout-date">';
+        html += '<div class="date-day">' + date.getDate() + '</div>';
+        html += '<div class="date-weekday">' + date.toLocaleDateString('en-US', { weekday: 'short' }) + '</div>';
+        html += '</div>';
+        html += '<div class="workout-type">';
+        html += '<div class="type-name">' + workout.name + (isToday ? ' 📍' : '') + '</div>';
+        html += '<div class="type-exercises">' + doneCount + '/' + workout.exercises.length + ' exercises</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="workout-toggle">▼</div>';
+        html += '</div>';
+        html += '<div class="workout-content">';
+        html += '<div class="exercise-list">';
+        
+        workout.exercises.forEach((exercise, idx) => {
+            html += createExerciseItem(workout.id, idx, exercise);
+        });
+        
+        html += '</div>';
+        html += '<div class="notes-section">';
+        html += '<div class="input-label">Notes</div>';
+        html += '<textarea class="notes-textarea" placeholder="Workout notes..." onchange="updateNotes(' + workout.id + ', this.value)">' + (workout.notes || '') + '</textarea>';
+        html += '</div>';
+        html += '<div class="quick-actions">';
+        html += '<button class="quick-btn" onclick="deleteWorkout(' + workout.id + ')">Delete Workout</button>';
+        html += '<button class="quick-btn" onclick="duplicateWorkout(' + workout.id + ')">Duplicate</button>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        
+        return html;
+    }
+
+    function createExerciseItem(workoutId, idx, exercise) {
+        let html = '<div class="exercise-item">';
+        html += '<div class="exercise-header">';
+        html += '<div class="exercise-name">' + exercise.name + '</div>';
+        html += '<input type="checkbox" class="exercise-check" ' + (exercise.done ? 'checked' : '') + ' onchange="updateExercise(' + workoutId + ', ' + idx + ', \'done\', this.checked)">';
+        html += '</div>';
+        html += '<div class="exercise-inputs">';
+        
+        html += '<div class="input-group">';
+        html += '<label class="input-label">Weight</label>';
+        html += '<input type="text" class="input-field" placeholder="0" value="' + (exercise.weight || '') + '" onchange="updateExercise(' + workoutId + ', ' + idx + ', \'weight\', this.value)">';
+        html += '</div>';
+        
+        html += '<div class="input-group">';
+        html += '<label class="input-label">Sets</label>';
+        html += '<input type="number" class="input-field" placeholder="0" value="' + (exercise.sets || '') + '" onchange="updateExercise(' + workoutId + ', ' + idx + ', \'sets\', this.value)">';
+        html += '</div>';
+        
+        html += '<div class="input-group">';
+        html += '<label class="input-label">Reps</label>';
+        html += '<input type="text" class="input-field" placeholder="0" value="' + (exercise.reps || '') + '" onchange="updateExercise(' + workoutId + ', ' + idx + ', \'reps\', this.value)">';
+        html += '</div>';
+        
+        html += '<div class="input-group">';
+        html += '<label class="input-label">RPE</label>';
+        html += '<select class="input-field" onchange="updateExercise(' + workoutId + ', ' + idx + ', \'rpe\', this.value)">';
+        html += '<option value="">-</option>';
+        
+        const rpeValues = [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10];
+        rpeValues.forEach(rpe => {
+            html += '<option value="' + rpe + '"' + (exercise.rpe == rpe ? ' selected' : '') + '>' + rpe + '</option>';
+        });
+        
+        html += '</select>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        
+        return html;
+    }
+
+    // Helper
+    function toggleWorkout(id) {
+        const card = document.getElementById('workout-' + id);
+        if (card) {
+            card.classList.toggle('expanded');
+        }
+    }
+
+    function updateExercise(workoutId, idx, field, value) {
+        const workout = workouts.find(w => w.id === workoutId);
+        if (!workout) return;
+
+        if (field === 'done') {
+            workout.exercises[idx][field] = value;
+        } else {
+            workout.exercises[idx][field] = String(value).trim();
+        }
+
+        saveData();
+    }
+
+    function updateNotes(workoutId, value) {
+        const workout = workouts.find(w => w.id === workoutId);
+        if (workout) {
+            workout.notes = value;
+            saveData();
+        }
+    }
+
+    function deleteWorkout(id) {
+        if (confirm('Delete this workout?')) {
+            workouts = workouts.filter(w => w.id !== id);
+            saveData();
+            renderWorkouts();
+        }
+    }
+
+    function duplicateWorkout(id) {
+        const original = workouts.find(w => w.id === id);
+        if (!original) return;
+
+        const copy = {
+            ...original,
+            id: Date.now(),
+            date: new Date().toISOString(),
+            exercises: original.exercises.map(e => ({
+                ...e,
+                weight: '',
+                sets: '',
+                reps: '',
+                rpe: '',
+                done: false
+            })),
+            notes: ''
+        };
+
+        workouts.unshift(copy);
+        saveData();
+        renderWorkouts();
+
+        setTimeout(() => {
+            const card = document.getElementById('workout-' + copy.id);
+            if (card) card.classList.add('expanded');
+        }, 100);
+    }
+
+    function formatDate(date) {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
+
+    function isDateToday(date) {
+        const today = new Date();
+        return date.getFullYear() === today.getFullYear() &&
+               date.getMonth() === today.getMonth() &&
+               date.getDate() === today.getDate();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
