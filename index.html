@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" sizes="180x180" href="favicon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -497,7 +494,7 @@
       <div class="header-actions">
         <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         <button class="icon-btn" onclick="showStats()">📊</button>
-        <button class="icon-btn" onclick="clearAllData()">🗑️</button>
+        <button class="icon-btn" onclick="clearAllData()">🗑</button>
       </div>
     </div>
   </div>
@@ -521,7 +518,7 @@
 
   <div class="container" id="container">
     <div class="empty-state">
-      <div class="empty-icon">🏋️</div>
+      <div class="empty-icon">🏋</div>
       <div class="empty-text">No workouts yet</div>
       <div class="empty-hint">Tap + to add your first workout</div>
     </div>
@@ -650,7 +647,7 @@
     }
 
     function showStats() {
-      alert(`Workout Stats:\n\nTotal: ${workouts.length} workouts\nThis week: ${document.getElementById('weekCount').textContent}\nThis month: ${document.getElementById('monthCount').textContent}`);
+      alert(Workout Stats:\n\nTotal: ${workouts.length} workouts\nThis week: ${document.getElementById('weekCount').textContent}\nThis month: ${document.getElementById('monthCount').textContent});
     }
 
     function showAddModal() {
@@ -672,7 +669,7 @@
       if (quickTemplates[type]) {
         quickActions.style.display = 'block';
         const buttons = quickTemplates[type].map(template =>
-          `<button class="quick-btn" onclick="selectTemplate('${type}', '${template}')">${template}</button>`
+          <button class="quick-btn" onclick="selectTemplate('${type}', '${template}')">${template}</button>
         ).join('');
         quickActions.innerHTML = '<div style="width: 100%; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Quick templates:</div>' + buttons;
       } else {
@@ -730,7 +727,7 @@
         const container = document.getElementById('container');
         
         if (workouts.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏋️</div><div class="empty-text">No workouts yet</div><div class="empty-hint">Tap + to add your first workout</div></div>';
+            container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏋</div><div class="empty-text">No workouts yet</div><div class="empty-hint">Tap + to add your first workout</div></div>';
             return;
         }
         
@@ -881,41 +878,24 @@
         }
     }
 
-  function duplicateWorkout(id) {
-  const original = workouts.find(w => w.id === id);
-  if (!original) return;
+    function duplicateWorkout(id) {
+        const original = workouts.find(w => w.id === id);
+        if (!original) return;
 
-  const newDateStr = prompt("Enter the new date for this duplicated workout (YYYY-MM-DD):");
-  if (!newDateStr || isNaN(Date.parse(newDateStr))) {
-    alert("Invalid date format. Please use YYYY-MM-DD.");
-    return;
-  }
-
-  const copy = {
-    ...original,
-    id: Date.now(),
-    date: new Date(newDateStr).toISOString(),
-    exercises: original.exercises.map(e => ({
-      ...e,
-      weight: '',
-      sets: '',
-      reps: '',
-      rpe: '',
-      done: false
-    })),
-    notes: ''
-  };
-
-  workouts.push(copy);
-  workouts.sort((a, b) => new Date(b.date) - new Date(a.date)); // newest to oldest
-  saveData();
-  renderWorkouts();
-
-  setTimeout(() => {
-    const card = document.getElementById('workout-' + copy.id);
-    if (card) card.classList.add('expanded');
-  }, 100);
-}
+        const copy = {
+            ...original,
+            id: Date.now(),
+            date: new Date().toISOString(),
+            exercises: original.exercises.map(e => ({
+                ...e,
+                weight: '',
+                sets: '',
+                reps: '',
+                rpe: '',
+                done: false
+            })),
+            notes: ''
+        };
 
         workouts.unshift(copy);
         saveData();
