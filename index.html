@@ -881,24 +881,41 @@
         }
     }
 
-    function duplicateWorkout(id) {
-        const original = workouts.find(w => w.id === id);
-        if (!original) return;
+  function duplicateWorkout(id) {
+  const original = workouts.find(w => w.id === id);
+  if (!original) return;
 
-        const copy = {
-            ...original,
-            id: Date.now(),
-            date: new Date().toISOString(),
-            exercises: original.exercises.map(e => ({
-                ...e,
-                weight: '',
-                sets: '',
-                reps: '',
-                rpe: '',
-                done: false
-            })),
-            notes: ''
-        };
+  const newDateStr = prompt("Enter the new date for this duplicated workout (YYYY-MM-DD):");
+  if (!newDateStr || isNaN(Date.parse(newDateStr))) {
+    alert("Invalid date format. Please use YYYY-MM-DD.");
+    return;
+  }
+
+  const copy = {
+    ...original,
+    id: Date.now(),
+    date: new Date(newDateStr).toISOString(),
+    exercises: original.exercises.map(e => ({
+      ...e,
+      weight: '',
+      sets: '',
+      reps: '',
+      rpe: '',
+      done: false
+    })),
+    notes: ''
+  };
+
+  workouts.push(copy);
+  workouts.sort((a, b) => new Date(b.date) - new Date(a.date)); // newest to oldest
+  saveData();
+  renderWorkouts();
+
+  setTimeout(() => {
+    const card = document.getElementById('workout-' + copy.id);
+    if (card) card.classList.add('expanded');
+  }, 100);
+}
 
         workouts.unshift(copy);
         saveData();
